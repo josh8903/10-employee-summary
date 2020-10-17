@@ -40,7 +40,7 @@ const internPrompt = [{
         choices: [
             "Intern",
             "Engineer",
-            "Done"
+            "DONE"
         ]
     }
 ];
