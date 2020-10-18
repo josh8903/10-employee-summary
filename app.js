@@ -1,106 +1,87 @@
-const Manager = require("./lib/Manager");
-const Engineer = require("./lib/Engineer");
-const Intern = require("./lib/Intern");
-const inquirer = require("inquirer");
-const path = require("path");
-const fs = require("fs");
-const OUTPUT_DIR = path.resolve(__dirname, "output");
-const outputPath = path.join(OUTPUT_DIR, "team.html");
-const render = require("./lib/htmlRenderer");
-const { getUnpackedSettings } = require("http2");
-const employees = [];
+const
+    Manager = require("./lib/Manager"),
+    Engineer = require("./lib/Engineer"),
+    Intern = require("./lib/Intern"),
+    inquirer = require("inquirer"),
+    path = require("path"),
+    fs = require("fs"),
+    OUTPUT_DIR = path.resolve(__dirname, "output"),
+    outputPath = path.join(OUTPUT_DIR, "team.html"),
+    render = require("./lib/htmlRenderer"),
+    { getUnpackedSettings } = require("http2"),
+    employees = [],
 
-// base prompt
-const promptAll = [{
+    // prompt base - all employees
+    promptAll = [{
         type: "input",
         message: "Name:",
         name: "name",
-        validate: answer => {
-            if (answer !== "") {
-                return true;
-            }
-            return "Please enter at least one character.";
-        }
-    },
-    {
+        validate: nullCheck
+    }, {
         type: "input",
         message: "Employee ID:",
         name: "id",
-        validate: answer => {
-            if (answer !== "") {
-                return true;
-            }
-            return "Please enter at least one character.";
-        }
-    },
-    {
+        validate: nullCheck
+    }, {
         type: "input",
         message: "E-mail:",
         name: "email",
-        validate: answer => {
-            const pass = answer.match(
-                /\S+@\S+\.\S+/
-            );
-            if (pass) {
-                return true;
-            }
-            return "Please enter a valid email address.";
-        }
+        validate: emailCheck
+    }],
+
+    // prompt addon - manager
+    promptManager = {
+        type: "input",
+        message: "Office number:",
+        name: "officeNumber",
+        validate: nullCheck
+    },
+
+    // prompt addon - intern
+    promptIntern = {
+        type: "input",
+        message: "School:",
+        name: "school",
+        validate: nullCheck
+    },
+
+    //prompt addon - egineer
+    promptEngineer = {
+        type: "input",
+        message: "Github:",
+        name: "github",
+        validate: nullCheck
+    },
+
+    // prompt addon - choose next
+    promptNext = {
+        type: "list",
+        message: "What type of employee would you like to add next?",
+        name: "next",
+        choices: [
+            "Intern",
+            "Engineer",
+            "DONE"
+        ]
     }
-];
 
-// prompt addon - manager
-const promptManager = {
-    type: "input",
-    message: "Office number:",
-    name: "officeNumber",
-    validate: answer => {
-        if (answer !== "") {
-            return true;
-        }
-        return "Please enter at least one character.";
+// input validation
+function nullCheck(answer) {
+    if (answer !== "") {
+        return true
     }
-};
+    return "Please enter at least one character."
+}
 
-// prompt addon - intern
-const promptIntern = {
-    type: "input",
-    message: "School:",
-    name: "school",
-    validate: answer => {
-        if (answer !== "") {
-            return true;
-        }
-        return "Please enter at least one character.";
+function emailCheck(answer) {
+    const pass = answer.match(/\S+@\S+\.\S+/)
+    if (pass) {
+        return true
     }
-};
+    return "Please enter a valid email address."
+}
 
-// prompt addon - engineer
-const promptEngineer = {
-    type: "input",
-    message: "Github:",
-    name: "github",
-    validate: answer => {
-        if (answer !== "") {
-            return true;
-        }
-        return "Please enter at least one character.";
-    }
-};
-
-// prompt addon - choose next
-const promptNext = {
-    type: "list",
-    message: "What type of employee would you like to add next?",
-    name: "next",
-    choices: [
-        "Intern",
-        "Engineer",
-        "DONE"
-    ]
-};
-
-// initialize 
+// initialize - add manager
 function init() {
     console.log(`\n- - - - - - - - - - - - - - -\nWelcome to Employee Summary!\nA Node CLI app that quickly\nassembles a work team HTML UI!\n- - - - - - - - - - - - - - -\n\n! Adding new manager ->`)
     let prompt = promptAll.slice()
@@ -114,7 +95,7 @@ function init() {
         })
 }
 
-// next choice handler
+// next choice handler - write file on 'DONE'
 function next(response) {
     if (response.next === "Intern") {
         intern()
@@ -124,14 +105,14 @@ function next(response) {
     }
     if (response.next === "DONE") {
         if (!fs.existsSync(OUTPUT_DIR)) {
-            console.log(`! Creating output directory ${OUTPUT_DIR}`)
             fs.mkdirSync(OUTPUT_DIR)
+            console.log(`! Creating output directory ${OUTPUT_DIR}`)
         }
-        fs.writeFile(outputPath, render(employees), function(err) {
-            console.log(`! Writing to file ${outputPath}\n! END\n`)
-            if (err) throw err
-        })
     }
+    fs.writeFile(outputPath, render(employees), function(err) {
+        console.log(`! Writing to file ${outputPath}\n! END\n`)
+        if (err) throw err
+    })
 }
 
 // add intern
