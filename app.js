@@ -10,174 +10,156 @@ const render = require("./lib/htmlRenderer");
 const { getUnpackedSettings } = require("http2");
 const employees = [];
 
-// runs initialy, manager prompt
-console.log(`\n  ! Welcome to Employee Summary - a simple Node CLI app\n  ! that quickly creates a team interface in HTML!\n\n  ! Now adding new Manager`)
-inquirer
-    .prompt([{
-            type: "input",
-            message: "Manager's name:",
-            name: "name"
-        },
-        {
-            type: "input",
-            message: "Manager's employee ID:",
-            name: "id"
-        },
-        {
-            type: "input",
-            message: "Manager's e-mail:",
-            name: "email"
-        },
-        {
-            type: "input",
-            message: "Manager's office number:",
-            name: "officeNumber",
-        },
-        {
-            type: "list",
-            message: "What type of employee would you like to add next?",
-            name: "nextType",
-            choices: [
-                "Intern",
-                "Engineer",
-                "DONE"
-            ]
-        }
-
-    ])
-    .then(function(response) {
-        console.log(`  ! ${response.name} added`)
-        employees.push(new Manager(response.name, response.id, response.email, response.officeNumber))
-        if (response.nextType === "Intern") {
-            console.log(`  ! Now adding new ${response.nextType}`)
-            inquirer
-                .prompt(internPrompt)
-                .then(nextIntern);
-        }
-        if (response.nextType === "Engineer") {
-            console.log(`  ! Now adding new ${response.nextType}`)
-            inquirer
-                .prompt(engineerPrompt)
-                .then(nextEngineer);
-        }
-        if (response.nextType === "DONE") {
-            fs.writeFile(outputPath, render(employees), function(err) {
-                if (err) throw err;
-                console.log(`  ! Writing to ${outputPath}`);
-            });
-        }
-    });
-
-// runs if add intern selected
-const nextIntern = function(response) {
-    console.log(`  ! ${response.name} added`)
-    employees.push(new Intern(response.name, response.id, response.email, response.school))
-    if (response.nextType === "Intern") {
-        console.log(`  ! Now adding new ${response.nextType}`)
-        inquirer
-            .prompt(internPrompt)
-            .then(nextIntern);
-    }
-    if (response.nextType === "Engineer") {
-        console.log(`  ! Now adding new ${response.nextType}`)
-        inquirer
-            .prompt(engineerPrompt)
-            .then(nextEngineer);
-    }
-    if (response.nextType === "DONE") {
-        fs.writeFile(outputPath, render(employees), function(err) {
-            if (err) throw err;
-            console.log(`  ! Writing to ${outputPath}`);
-        });
-    }
-}
-
-// runs if add engineer selected
-const nextEngineer = function(response) {
-    console.log(`  ! ${response.name} added`)
-    employees.push(new Engineer(response.name, response.id, response.email, response.github))
-    if (response.nextType === "Intern") {
-        console.log(`  ! Now adding new ${response.nextType}`)
-        inquirer
-            .prompt(internPrompt)
-            .then(nextIntern);
-    }
-    if (response.nextType === "Engineer") {
-        console.log(`  ! Now adding new ${response.nextType}`)
-        inquirer
-            .prompt(engineerPrompt)
-            .then(nextEngineer);
-    }
-    if (response.nextType === "DONE") {
-        fs.writeFile(outputPath, render(employees), function(err) {
-            if (err) throw err;
-            console.log(`  ! Writing to ${outputPath}`);
-        });
-    }
-}
-
-// intern prompt
-const internPrompt = [{
+// base prompt
+const promptAll = [{
         type: "input",
-        message: "Intern's name:",
-        name: "name"
+        message: "Name:",
+        name: "name",
+        validate: answer => {
+            if (answer !== "") {
+                return true;
+            }
+            return "Please enter at least one character.";
+        }
     },
     {
         type: "input",
-        message: "Intern's employee ID:",
-        name: "id"
+        message: "Employee ID:",
+        name: "id",
+        validate: answer => {
+            if (answer !== "") {
+                return true;
+            }
+            return "Please enter at least one character.";
+        }
     },
     {
         type: "input",
-        message: "Intern's e-mail:",
-        name: "email"
-    },
-    {
-        type: "input",
-        message: "Intern's school:",
-        name: "school",
-    },
-    {
-        type: "list",
-        message: "What type of employee would you like to add next?",
-        name: "nextType",
-        choices: [
-            "Intern",
-            "Engineer",
-            "DONE"
-        ]
+        message: "E-mail:",
+        name: "email",
+        validate: answer => {
+            const pass = answer.match(
+                /\S+@\S+\.\S+/
+            );
+            if (pass) {
+                return true;
+            }
+            return "Please enter a valid email address.";
+        }
     }
 ];
 
-// engineer prompt
-const engineerPrompt = [{
-        type: "input",
-        message: "Engineer's name:",
-        name: "name"
-    },
-    {
-        type: "input",
-        message: "Engineer's employee ID:",
-        name: "id"
-    },
-    {
-        type: "input",
-        message: "Engineer's e-mail:",
-        name: "email"
-    },
-    {
-        type: "input",
-        message: "Engineers's github:",
-        name: "github",
-    },
-    {
-        type: "list",
-        message: "What type of employee would you like to add next?",
-        name: "nextType",
-        choices: [
-            "Intern",
-            "Engineer",
-            "DONE"
-        ]
+// prompt addon - manager
+const promptManager = {
+    type: "input",
+    message: "Office number:",
+    name: "officeNumber",
+    validate: answer => {
+        if (answer !== "") {
+            return true;
+        }
+        return "Please enter at least one character.";
     }
-];
+};
+
+// prompt addon - intern
+const promptIntern = {
+    type: "input",
+    message: "School:",
+    name: "school",
+    validate: answer => {
+        if (answer !== "") {
+            return true;
+        }
+        return "Please enter at least one character.";
+    }
+};
+
+// prompt addon - engineer
+const promptEngineer = {
+    type: "input",
+    message: "Github:",
+    name: "github",
+    validate: answer => {
+        if (answer !== "") {
+            return true;
+        }
+        return "Please enter at least one character.";
+    }
+};
+
+// prompt addon - choose next
+const promptNext = {
+    type: "list",
+    message: "What type of employee would you like to add next?",
+    name: "next",
+    choices: [
+        "Intern",
+        "Engineer",
+        "DONE"
+    ]
+};
+
+// initialize 
+function init() {
+    console.log(`\n- - - - - - - - - - - - - - -\nWelcome to Employee Summary!\nA Node CLI app that quickly\nassembles a work team HTML UI!\n- - - - - - - - - - - - - - -\n\n! Adding new manager ->`)
+    let prompt = promptAll.slice()
+    prompt.push(promptManager, promptNext)
+    inquirer
+        .prompt(prompt)
+        .then(function(response) {
+            console.log(`! Added ${response.name}\n`)
+            employees.push(new Manager(response.name, response.id, response.email, response.officeNumber))
+            next(response)
+        })
+}
+
+// next choice handler
+function next(response) {
+    if (response.next === "Intern") {
+        intern()
+    }
+    if (response.next === "Engineer") {
+        engineer()
+    }
+    if (response.next === "DONE") {
+        if (!fs.existsSync(OUTPUT_DIR)) {
+            console.log(`! Creating output directory ${OUTPUT_DIR}`)
+            fs.mkdirSync(OUTPUT_DIR)
+        }
+        fs.writeFile(outputPath, render(employees), function(err) {
+            console.log(`! Writing to file ${outputPath}\n! END\n`)
+            if (err) throw err
+        })
+    }
+}
+
+// add intern
+function intern() {
+    console.log(`! Adding new intern ->`)
+    let prompt = promptAll.slice()
+    prompt.push(promptIntern, promptNext)
+    inquirer
+        .prompt(prompt)
+        .then(function(response) {
+            console.log(`! Added ${response.name}\n`)
+            employees.push(new Intern(response.name, response.id, response.email, response.school))
+            next(response)
+        })
+}
+
+// add engineer
+function engineer() {
+    console.log(`! Adding new engineer ->`)
+    let prompt = promptAll.slice();
+    prompt.push(promptEngineer, promptNext)
+    inquirer
+        .prompt(prompt)
+        .then(function(response) {
+            console.log(`! Added ${response.name}\n`)
+            employees.push(new Engineer(response.name, response.id, response.email, response.github))
+            next(response)
+        })
+}
+
+init()
