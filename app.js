@@ -108,11 +108,11 @@ function next(response) {
             fs.mkdirSync(OUTPUT_DIR)
             console.log(`! Creating output directory ${OUTPUT_DIR}`)
         }
+        fs.writeFile(outputPath, render(employees), function(err) {
+            console.log(`! Writing to file ${outputPath}\n! END\n`)
+            if (err) throw err
+        })
     }
-    fs.writeFile(outputPath, render(employees), function(err) {
-        console.log(`! Writing to file ${outputPath}\n! END\n`)
-        if (err) throw err
-    })
 }
 
 // add intern
