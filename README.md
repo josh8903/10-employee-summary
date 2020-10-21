@@ -2,8 +2,7 @@
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 ## Description
 A simple Node CLI application that quickly generates a quality HTML UI detailing your work team!
-## Sample README
-https://github.com/josh8903/09-readme-generator/blob/master/generatedREADME.md
+## Sample Team UI
 ![screenshot](./assets/images/screenshot.png)
 ## Walk-through
 https://drive.google.com/file/d/187qg7NQSln1854Wzbe7FeOnGvcdvUyIG/view
