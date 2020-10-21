@@ -21,9 +21,9 @@ cd 10-employee-summary
 npm i
 ```
 ## Tests
-1. Run this command to performn tests
+1. Run this command to perform tests
 ```
-node test
+npm test
 ```
 ## Usage
 1. Run this command to start the application
